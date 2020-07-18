@@ -2,24 +2,26 @@ from random import randint
 import tkinter as tk
 from tkinter.messagebox import showinfo, showwarning
 
+#from math import abs
+
 win = tk.Tk()
 #win["bg"] = "orange"
 win.title("Game_NoName")
 win.geometry("1000x600")
 
-coords = []
+points = []
 
 def rand_num():
-    global coords
+    global points
 
-    if len(coords) >= 0 and len(coords) < 2:
+    if len(points) >= 0 and len(points) < 2:
         num = randint(1, 6)
-        coords.append(num)
+        points.append(num)
         res = tk.Label(win, text = f"{num}", font=("Arial Bold", 18))
         res.place(x = 830, y = 150)
 
-        if len(coords) == 2:
-            res = tk.Label(win, text = f"{coords[0], coords[1]}", font=("Arial Bold", 18))
+        if len(points) == 2:
+            res = tk.Label(win, text = f"{points[0], points[1]}", font=("Arial Bold", 18))
             res.place(x = 810, y = 300)
     else:
         showwarning("Stop", "Only 2 numbers")
@@ -47,37 +49,59 @@ while test > 0:
     game.create_line(test, 50, test, 100, width = 2, fill = "blue")
     test -= 1
 
+
+def find_square(rect_coords):
+    a_side = abs(rect_coords[0][0] - rect_coords[1][0]) // 50
+    b_side = abs(rect_coords[0][1] - rect_coords[1][1]) // 50
+
+    square = a_side * b_side
+    print(square)
+    return square
+
+
 def click_point(event):
-    x = int(event.x)
-    y = int(event.y)
-    R = 3
+    global points
 
-    if len(rect_coords) == 0:
-        x = (x // 50) * 50
-        y = (y // 50) * 50
-        rect_coords.append([x, y])
-    elif len(rect_coords) == 1:
-        x = (x // 50) * 50
-        y = (y // 50) * 50
+    if len(points) == 2:
+        square = points[0] * points[1]
 
-        if x >= rect_coords[0][0] and y >= rect_coords[0][1]:
-            x += 50
-            y += 50
-        elif x > rect_coords[0][0] and y < rect_coords[0][1]:
-            x += 50
-            rect_coords[0][1] += 50
-        elif x < rect_coords[0][0] and y > rect_coords[0][1]:
-            rect_coords[0][0] += 50
-            y += 50
-        else:
-            rect_coords[0][0] += 50
-            rect_coords[0][1] += 50
-        rect_coords.append([x, y])
-    print(x, y)
+        x = int(event.x)
+        y = int(event.y)
 
-    if len(rect_coords) == 2:
-        game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=1.5, fill = 'green')
-        rect_coords.clear()
+        if len(rect_coords) == 0:
+            x = (x // 50) * 50
+            y = (y // 50) * 50
+            rect_coords.append([x, y])
+        elif len(rect_coords) == 1:
+            x = (x // 50) * 50
+            y = (y // 50) * 50
+
+            if x >= rect_coords[0][0] and y >= rect_coords[0][1]:
+                x += 50
+                y += 50
+            elif x > rect_coords[0][0] and y < rect_coords[0][1]:
+                x += 50
+                rect_coords[0][1] += 50
+            elif x < rect_coords[0][0] and y > rect_coords[0][1]:
+                rect_coords[0][0] += 50
+                y += 50
+            else:
+                rect_coords[0][0] += 50
+                rect_coords[0][1] += 50
+            rect_coords.append([x, y])
+        print(x, y)
+
+        if len(rect_coords) == 2:
+            cur_square = find_square(rect_coords)
+            
+            if (cur_square == square):
+                game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=1.5, fill = 'green')
+            else:
+                showwarning("Error", "Unright square")
+            rect_coords.clear()
+    else:
+        showinfo("Error", "Not enough points")
+
 
     #game.create_oval(x - R, y - R, x + R, y + R, width=1.5, fill = 'pink')
 
