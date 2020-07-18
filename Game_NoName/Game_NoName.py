@@ -6,7 +6,7 @@ from tkinter.messagebox import showinfo, showwarning
 
 win = tk.Tk()
 #win["bg"] = "orange"
-win.title("Game_NoName")
+win.title("Game_NoName vers 0.2")
 win.geometry("1000x600")
 
 points = []
@@ -48,6 +48,56 @@ test = 50
 while test > 0:
     game.create_line(test, 50, test, 100, width = 2, fill = "blue")
     test -= 1
+
+
+used_fields = []
+
+def intersection_check(rect_coords):
+    cur_fields = []
+    # x = abs(rect_coords[0][0] - rect_coords[1][0]) // 50
+    # y = abs(rect_coords[0][1] - rect_coords[1][1]) // 50
+    print(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1])
+    x_max = rect_coords[0][0]
+    x_min = rect_coords[1][0]
+
+    if x_min >= x_max:
+        temp = x_max
+        x_max = x_min
+        x_min = temp
+
+    y_max = rect_coords[0][1]
+    y_min = rect_coords[1][1]
+
+    if y_min >= y_max:
+        temp = y_max
+        y_max = y_min
+        y_min = temp    
+    
+    temp = y_min
+
+    print(x_min, x_max, y_min, y_max)
+    while x_min < x_max:
+        while temp < y_max:
+            cur_fields.append([x_min, temp])
+            temp += 50
+            print(x_min, temp)
+        x_min += 50
+        temp = y_min
+
+    flag = True
+
+    for i in range(len(used_fields)):
+        for j in range(len(cur_fields)):
+            if used_fields[i] == cur_fields[j]:
+                flag = False
+
+    if flag:
+        for j in range(len(cur_fields)):
+            used_fields.append(cur_fields[j])
+    
+    print(used_fields)
+
+    return flag
 
 
 def find_square(rect_coords):
@@ -95,9 +145,15 @@ def click_point(event):
             cur_square = find_square(rect_coords)
             
             if (cur_square == square):
-                game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=1.5, fill = 'green')
+                if intersection_check(rect_coords):
+                    game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=1.5, fill = 'green')
+                    points.clear()
+                    
+                else:
+                    showwarning("Error", "Intersection of the fields")
             else:
                 showwarning("Error", "Unright square")
+    
             rect_coords.clear()
     else:
         showinfo("Error", "Not enough points")
