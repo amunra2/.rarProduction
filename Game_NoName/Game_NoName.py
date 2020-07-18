@@ -51,16 +51,35 @@ def click_point(event):
     x = int(event.x)
     y = int(event.y)
     R = 3
-    x = (x // 50) * 50
-    y = (y // 50) * 50
-    rect_coords.append([x, y])
+
+    if len(rect_coords) == 0:
+        x = (x // 50) * 50
+        y = (y // 50) * 50
+        rect_coords.append([x, y])
+    elif len(rect_coords) == 1:
+        x = (x // 50) * 50
+        y = (y // 50) * 50
+
+        if x >= rect_coords[0][0] and y >= rect_coords[0][1]:
+            x += 50
+            y += 50
+        elif x > rect_coords[0][0] and y < rect_coords[0][1]:
+            x += 50
+            rect_coords[0][1] += 50
+        elif x < rect_coords[0][0] and y > rect_coords[0][1]:
+            rect_coords[0][0] += 50
+            y += 50
+        else:
+            rect_coords[0][0] += 50
+            rect_coords[0][1] += 50
+        rect_coords.append([x, y])
     print(x, y)
 
     if len(rect_coords) == 2:
         game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=1.5, fill = 'green')
         rect_coords.clear()
 
-    game.create_oval(x - R, y - R, x + R, y + R, width=1.5, fill = 'pink')
+    #game.create_oval(x - R, y - R, x + R, y + R, width=1.5, fill = 'pink')
 
 rect_coords = []
 game.bind('<1>', click_point)
