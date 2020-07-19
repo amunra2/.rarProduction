@@ -6,11 +6,12 @@ from tkinter.messagebox import showinfo, showwarning
 
 win = tk.Tk()
 #win["bg"] = "orange"
-win.title("Game_NoName vers 0.2")
-win.geometry("1000x600")
+win.title("Game_NoName vers 0.3")
+win.geometry("1300x1000")
 
+
+color_flag = True
 points = []
-
 def rand_num():
     global points
 
@@ -18,40 +19,57 @@ def rand_num():
         num = randint(1, 6)
         points.append(num)
         res = tk.Label(win, text = f"{num}", font=("Arial Bold", 18))
-        res.place(x = 830, y = 150)
+        res.place(x = 1130, y = 150)
 
         if len(points) == 2:
             res = tk.Label(win, text = f"{points[0], points[1]}", font=("Arial Bold", 18))
-            res.place(x = 810, y = 300)
+            res.place(x = 1110, y = 300)
     else:
         showwarning("Stop", "Only 2 numbers")
 
+
+def skip_turn():
+    global points, color_flag
+    points.clear()
+    
+    if color_flag:
+        color_flag = False
+    else:
+        color_flag = True
+
+
+
+
+
 text = tk.Label(win, text="Random number", font=("Arial Bold", 18))
-text.place(x = 750, y = 100)
+text.place(x = 1050, y = 100)
 text = tk.Label(win, text="Your numbers are", font=("Arial Bold", 18))
-text.place(x = 750, y = 250)
+text.place(x = 1050, y = 250)
+
 
 num_find = tk.Button(win, text = "Number", command = rand_num, font=("Arial Bold", 18), background = "lightblue")
-num_find.place(x = 780, y = 400)
+num_find.place(x = 1080, y = 400)
+
+skip = tk.Button(win, text = "Skip turn", command = skip_turn, font=("Arial Bold", 18), background = "lightblue")
+skip.place(x = 1080, y = 500)
 
 
-game = tk.Canvas(win, width = 700, height = 600, bg = "orange")
+game = tk.Canvas(win, width = 1000, height = 1000, bg = "lightgreen")
 game.place(x = 0, y = 0)
 
-test = 700
+test = 1000
 while test > 0:
-    game.create_line(test, 0, test, 600, width = 2, fill = "blue")
-    game.create_line(0, test, 700, test, width = 2, fill = "blue")
+    game.create_line(test, 0, test, 1000, width = 2, fill = "blue")
+    game.create_line(0, test, 1000, test, width = 2, fill = "blue")
     test -= 50
 
-test = 50
-while test > 0:
-    game.create_line(test, 50, test, 100, width = 2, fill = "blue")
-    test -= 1
+# test = 50
+# while test > 0:
+#     game.create_line(test, 50, test, 100, width = 2, fill = "blue")
+#     test -= 1
 
 
 used_fields = []
-
 def intersection_check(rect_coords):
     cur_fields = []
     # x = abs(rect_coords[0][0] - rect_coords[1][0]) // 50
@@ -110,7 +128,12 @@ def find_square(rect_coords):
 
 
 def click_point(event):
-    global points
+    global points, color_flag
+
+    if color_flag:
+        color = 'red'
+    else:
+        color = 'purple'
 
     if len(points) == 2:
         square = points[0] * points[1]
@@ -146,8 +169,13 @@ def click_point(event):
             
             if (cur_square == square):
                 if intersection_check(rect_coords):
-                    game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=1.5, fill = 'green')
+                    game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=2, fill = color)
                     points.clear()
+                    
+                    if color_flag:
+                        color_flag = False
+                    else:
+                        color_flag = True
                     
                 else:
                     showwarning("Error", "Intersection of the fields")
@@ -161,6 +189,7 @@ def click_point(event):
 
     #game.create_oval(x - R, y - R, x + R, y + R, width=1.5, fill = 'pink')
 
+
 rect_coords = []
 game.bind('<1>', click_point)
-win.mainloop() #12x14
+win.mainloop() #20x20
