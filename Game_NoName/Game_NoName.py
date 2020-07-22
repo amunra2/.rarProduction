@@ -6,7 +6,7 @@ from tkinter.messagebox import showinfo, showwarning
 
 win = tk.Tk()
 #win["bg"] = "orange"
-win.title("Game_NoName vers 0.5")
+win.title("Game_NoName vers 0.5.1")
 win.geometry("1300x1000")
 
 
@@ -71,7 +71,7 @@ while test > 0:
 used_fields = []
 
 red_fields = []
-purple_fieds = []
+purple_fields = []
 
 second = 0 # For second step
 color_flag = True
@@ -110,8 +110,7 @@ def intersection_check(rect_coords):
 
     check_mis = first_second_step(cur_fields, used_fields)
 
-    # if connection_blocks(cur_fields, used_fields) == -4:
-    #     check_mis = -4
+
 
     for i in range(len(used_fields)):
         for j in range(len(cur_fields)):
@@ -121,8 +120,13 @@ def intersection_check(rect_coords):
     if check_mis == 0: # if not intersection and not problems with first 2 steps - add to use fields
         for j in range(len(cur_fields)):
             used_fields.append(cur_fields[j])
+
+            if color_flag:
+                red_fields.append(cur_fields[j])
+            else:
+                purple_fields.append(cur_fields[j])
     
-    print(used_fields)
+    #print(used_fields)
 
     return check_mis
 
@@ -206,9 +210,10 @@ def click_point(event):
 
 
 def first_second_step(cur_fields, used_fields): #0 0     950 0      0 950    950 950
-    global second
+    global second, color_flag
+
     if len(used_fields) != 0 and second == 2:
-        if connection_blocks(cur_fields, used_fields):
+        if connection_blocks(cur_fields, red_fields, purple_fields, color_flag):
             return -4
         else:
             return 0 # not 1st and not 2nd step
@@ -244,15 +249,26 @@ def first_second_step(cur_fields, used_fields): #0 0     950 0      0 950    950
             return check
 
 
-def connection_blocks(cur_fields, used_fields):
+def connection_blocks(cur_fields, red_fields, purple_fields, color_flag):
     # global 
     connection = True
 
+    print("cur_fields")
+    print(cur_fields)
+
+    if color_flag:
+        arr = red_fields
+        print(red_fields)
+    else:
+        arr = purple_fields
+        print(purple_fields)
+        print(arr)
+
     for i in range(len(cur_fields)):
-        for j in range(len(used_fields)):
+        for j in range(len(arr)):
             
-            x_dif = abs(used_fields[j][0] - cur_fields[i][0])
-            y_dif = abs(used_fields[j][1] - cur_fields[i][1])
+            x_dif = abs(arr[j][0] - cur_fields[i][0])
+            y_dif = abs(arr[j][1] - cur_fields[i][1])
 
             if ((x_dif == 0) and (y_dif == 50)) or ((y_dif == 0) and (x_dif == 50)):
                 print("Yessssssssssssssssssssssssssssssssssssssssssssssssssssssss")
