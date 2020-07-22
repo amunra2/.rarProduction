@@ -6,17 +6,16 @@ from tkinter.messagebox import showinfo, showwarning
 
 win = tk.Tk()
 #win["bg"] = "orange"
-win.title("Game_NoName vers 0.4")
+win.title("Game_NoName vers 0.5")
 win.geometry("1300x1000")
 
 
-color_flag = True
 points = []
 def rand_num():
     global points
 
     if len(points) >= 0 and len(points) < 2:
-        num = randint(1, 6)
+        num = randint(1, 4)
         points.append(num)
         res = tk.Label(win, text = f"{num}", font=("Arial Bold", 18))
         res.place(x = 1130, y = 150)
@@ -70,7 +69,12 @@ while test > 0:
 
 
 used_fields = []
-second = 0
+
+red_fields = []
+purple_fieds = []
+
+second = 0 # For second step
+color_flag = True
 def intersection_check(rect_coords):
     global second
     cur_fields = []
@@ -105,6 +109,9 @@ def intersection_check(rect_coords):
         temp = y_min
 
     check_mis = first_second_step(cur_fields, used_fields)
+
+    # if connection_blocks(cur_fields, used_fields) == -4:
+    #     check_mis = -4
 
     for i in range(len(used_fields)):
         for j in range(len(cur_fields)):
@@ -185,6 +192,8 @@ def click_point(event):
                     showwarning("Error", "Second step only in the opposite corner")                    
                 elif check_mis == -3:
                     showwarning("Error", "Intersection of the fields")
+                elif check_mis == -4:
+                    showwarning("Error", "Fileds must be connected")
             else:
                 showwarning("Error", "Unright square")
     
@@ -196,11 +205,13 @@ def click_point(event):
     #game.create_oval(x - R, y - R, x + R, y + R, width=1.5, fill = 'pink')
 
 
-
 def first_second_step(cur_fields, used_fields): #0 0     950 0      0 950    950 950
     global second
     if len(used_fields) != 0 and second == 2:
-        return 0 # not 1st and not 2nd step
+        if connection_blocks(cur_fields, used_fields):
+            return -4
+        else:
+            return 0 # not 1st and not 2nd step
     else:
         left_up = [0, 0]
         right_up = [950, 0]
@@ -233,6 +244,22 @@ def first_second_step(cur_fields, used_fields): #0 0     950 0      0 950    950
             return check
 
 
+def connection_blocks(cur_fields, used_fields):
+    # global 
+    connection = True
+
+    for i in range(len(cur_fields)):
+        for j in range(len(used_fields)):
+            
+            x_dif = abs(used_fields[j][0] - cur_fields[i][0])
+            y_dif = abs(used_fields[j][1] - cur_fields[i][1])
+
+            if ((x_dif == 0) and (y_dif == 50)) or ((y_dif == 0) and (x_dif == 50)):
+                print("Yessssssssssssssssssssssssssssssssssssssssssssssssssssssss")
+                connection = False
+                return connection
+                
+    return connection
 
 
 
