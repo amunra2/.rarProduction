@@ -2,32 +2,23 @@ from random import randint
 import tkinter as tk
 from tkinter.messagebox import showinfo, showwarning
 
-#from math import abs
-
-win = tk.Tk()
-#win["bg"] = "orange"
-win.title("Game_NoName vers 0.6.0")
-win.geometry("1300x1000")
-
-# Variables (???)
-points = []
-used_fields = []
-
-red_fields = []
-purple_fields = []
-
-second = 0 # For second step
-color_flag = True
 steps = 50
+def check_win(used_fields, square_first_player, square_second_player):
+    global steps
 
-square_first_player = 0
-square_second_player = 0
+    if len(used_fields) == 400 or steps == 0:
+        winner(square_first_player, square_second_player)
+    else:
+        steps -= 1
+        text = tk.Label(win, text = f"Steps left: {steps}", font=("Arial Bold", 18))
+        text.place(x = 1050, y = 700)
+
 
 def rand_num():
     global points
 
     if len(points) >= 0 and len(points) < 2:
-        num = randint(1, 4)
+        num = randint(1, 3)
         points.append(num)
         res = tk.Label(win, text = f"{num}", font=("Arial Bold", 18))
         res.place(x = 1130, y = 150)
@@ -48,15 +39,10 @@ def skip_turn():
     else:
         color_flag = True
 
-    if len(used_fields) == 400 or steps == 0:
-        winner(square_first_player, square_second_player)
-    else:
-        steps -= 1
-        text = tk.Label(win, text = f"Steps left: {steps}", font=("Arial Bold", 18))
-        text.place(x = 1050, y = 700)
+    check_win(used_fields, square_first_player, square_second_player)
 
 
-def draw_field():
+def draw_field():  # depends from size of the field
 
     test = 1000
     while test > 0:
@@ -79,6 +65,7 @@ def draw_field():
 
 def clear_canvas():
     global second, color_flag, steps
+
     points.clear()
     used_fields.clear()
     red_fields.clear()
@@ -91,33 +78,10 @@ def clear_canvas():
     draw_field()
 
 
-text = tk.Label(win, text="Random number", font=("Arial Bold", 18))
-text.place(x = 1050, y = 100)
-text = tk.Label(win, text="Your numbers are", font=("Arial Bold", 18))
-text.place(x = 1050, y = 250)
-
-
-num_find = tk.Button(win, text = "Number", command = rand_num, font=("Arial Bold", 18), background = "lightblue")
-num_find.place(x = 1080, y = 400)
-
-skip = tk.Button(win, text = "Skip turn", command = skip_turn, font=("Arial Bold", 18), background = "lightblue")
-skip.place(x = 1080, y = 500)
-
-clear_field = tk.Button(win, text = "Clear", command = clear_canvas, font=("Arial Bold", 18), background = "lightblue")
-clear_field.place(x = 1080, y = 900)
-
-game = tk.Canvas(win, width = 1000, height = 1000, bg = "lightgreen")
-game.place(x = 0, y = 0)
-
-draw_field() # draw!
-
-
-def intersection_check(rect_coords):
+def mistakes_check(rect_coords):
     global second
+
     cur_fields = []
-    # x = abs(rect_coords[0][0] - rect_coords[1][0]) // 50
-    # y = abs(rect_coords[0][1] - rect_coords[1][1]) // 50
-    print(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1])
     x_max = rect_coords[0][0]
     x_min = rect_coords[1][0]
 
@@ -136,8 +100,7 @@ def intersection_check(rect_coords):
     
     temp = y_min
 
-    print(x_min, x_max, y_min, y_max)
-    while x_min < x_max:
+    while x_min < x_max: # writing all current fields in th array
         while temp < y_max:
             cur_fields.append([x_min, temp])
             temp += 50
@@ -145,113 +108,125 @@ def intersection_check(rect_coords):
         x_min += 50
         temp = y_min
 
-    check_mis = first_second_step(cur_fields, used_fields)
+    check_mis = first_second_step(cur_fields, used_fields)  # mistakes from first two steps
 
+    if check_square(rect_coords, points):
+        check_mis = -5
 
-
-    for i in range(len(used_fields)):
+    for i in range(len(used_fields)):  # ineresection check (mistake)
         for j in range(len(cur_fields)):
             if used_fields[i] == cur_fields[j]:
-                check_mis = -3 # ineresection mistake
+                check_mis = -3
 
     if check_mis == 0: # if not intersection and not problems with first 2 steps - add to use fields
         for j in range(len(cur_fields)):
             used_fields.append(cur_fields[j])
 
-            if color_flag:
+            if color_flag: # change color of the block
                 red_fields.append(cur_fields[j])
             else:
                 purple_fields.append(cur_fields[j])
-    
-    #print(used_fields)
 
-    return check_mis
+    return check_mis # code of the mistake (from 0 to -5)
 
 
-def find_square(rect_coords):
+def check_square(rect_coords, points):
     a_side = abs(rect_coords[0][0] - rect_coords[1][0]) // 50
     b_side = abs(rect_coords[0][1] - rect_coords[1][1]) // 50
 
-    square = a_side * b_side
-    print(square)
-    return square
+    right_square = points[0] * points[1]
+    cur_square = a_side * b_side
+
+    if (right_square == cur_square):
+        check = False
+    else:
+        check = True
+
+    return check
 
 
-def click_point(event):
-    global points, color_flag, steps, square_first_player, square_second_player
+def rectangle_coords(x, y):
+    points_check = False
+
+    if len(rect_coords) == 0:
+            x = (x // 50) * 50
+            y = (y // 50) * 50
+            rect_coords.append([x, y])
+    elif len(rect_coords) == 1:
+        x = (x // 50) * 50
+        y = (y // 50) * 50
+
+        if x >= rect_coords[0][0] and y >= rect_coords[0][1]:
+            x += 50
+            y += 50
+        elif x > rect_coords[0][0] and y < rect_coords[0][1]:
+            x += 50
+            rect_coords[0][1] += 50
+        elif x < rect_coords[0][0] and y > rect_coords[0][1]:
+            rect_coords[0][0] += 50
+            y += 50
+        else:
+            rect_coords[0][0] += 50
+            rect_coords[0][1] += 50
+        rect_coords.append([x, y])
+
+        points_check = True
+
+    return points_check
+
+
+def build_rect(check_mis, rect_coords, points):
+    global color_flag, square_first_player, square_second_player
 
     if color_flag:
         color = 'red'
     else:
         color = 'purple'
 
+    square = points[0] * points[1]
+
+    if check_mis == 0:
+        game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=2, fill = color)
+        points.clear()
+
+        if color_flag: # square check
+            square_first_player += square
+        else:
+            square_second_player += square
+
+        check_win(used_fields, square_first_player, square_second_player)
+
+        if color_flag: # cheange color
+            color_flag = False
+        else:
+            color_flag = True
+    elif check_mis == -1:
+        showwarning("Error", "First step only in the corner")
+    elif check_mis == -2:
+        showwarning("Error", "Second step only in the opposite corner")                    
+    elif check_mis == -3:
+        showwarning("Error", "Intersection of the fields")
+    elif check_mis == -4:
+        showwarning("Error", "Fileds must be connected")
+    elif check_mis == -5:
+        showwarning("Error", "Unright square")
+    rect_coords.clear()
+
+
+def click_point(event):
+    global points
+
     if len(points) == 2:
-
-        square = points[0] * points[1]
-
         x = int(event.x)
         y = int(event.y)
 
-        if len(rect_coords) == 0:
-            x = (x // 50) * 50
-            y = (y // 50) * 50
-            rect_coords.append([x, y])
-        elif len(rect_coords) == 1:
-            x = (x // 50) * 50
-            y = (y // 50) * 50
+        points_check = rectangle_coords(x, y)
 
-            if x >= rect_coords[0][0] and y >= rect_coords[0][1]:
-                x += 50
-                y += 50
-            elif x > rect_coords[0][0] and y < rect_coords[0][1]:
-                x += 50
-                rect_coords[0][1] += 50
-            elif x < rect_coords[0][0] and y > rect_coords[0][1]:
-                rect_coords[0][0] += 50
-                y += 50
-            else:
-                rect_coords[0][0] += 50
-                rect_coords[0][1] += 50
-            rect_coords.append([x, y])
-        print(x, y)
+        if points_check:
 
-        if len(rect_coords) == 2:
-            cur_square = find_square(rect_coords)
-            
-            if (cur_square == square):
-                check_mis = intersection_check(rect_coords)
-                if check_mis == 0:
-                    game.create_rectangle(rect_coords[0][0], rect_coords[0][1], rect_coords[1][0], rect_coords[1][1], width=2, fill = color)
-                    points.clear()
+            check_mis = mistakes_check(rect_coords)
 
-                    if color_flag: # square check
-                        square_first_player += square
-                    else:
-                        square_second_player += square
-
-                    if len(used_fields) == 400 or steps == 0: # check win
-                        winner(square_first_player, square_second_player)
-                    else:
-                        steps -= 1
-                        text = tk.Label(win, text = f"Steps left: {steps}", font=("Arial Bold", 18))
-                        text.place(x = 1050, y = 700)
-
-                    if color_flag: # cheange color
-                        color_flag = False
-                    else:
-                        color_flag = True
-                elif check_mis == -1:
-                    showwarning("Error", "First step only in the corner")
-                elif check_mis == -2:
-                    showwarning("Error", "Second step only in the opposite corner")                    
-                elif check_mis == -3:
-                    showwarning("Error", "Intersection of the fields")
-                elif check_mis == -4:
-                    showwarning("Error", "Fileds must be connected")
-            else:
-                showwarning("Error", "Unright square")
-    
-            rect_coords.clear()
+            build_rect(check_mis, rect_coords, points)
     else:
         showinfo("Error", "Not enough points")
 
@@ -308,11 +283,8 @@ def connection_blocks(cur_fields, red_fields, purple_fields, color_flag):
 
     if color_flag:
         arr = red_fields
-        print(red_fields)
     else:
         arr = purple_fields
-        print(purple_fields)
-        print(arr)
 
     for i in range(len(cur_fields)):
         for j in range(len(arr)):
@@ -321,7 +293,6 @@ def connection_blocks(cur_fields, red_fields, purple_fields, color_flag):
             y_dif = abs(arr[j][1] - cur_fields[i][1])
 
             if ((x_dif == 0) and (y_dif == 50)) or ((y_dif == 0) and (x_dif == 50)):
-                print("Yessssssssssssssssssssssssssssssssssssssssssssssssssssssss")
                 connection = False
                 return connection
                 
@@ -341,12 +312,50 @@ def winner(square_first_player, square_second_player):
     clear_canvas()
 
 
-rect_coords = []
-game.bind('<1>', click_point)
-win.mainloop() #20x20
+if __name__ == "__main__":
+    win = tk.Tk()
+    win.title("Game_NoName vers 0.6.1")
+    win.geometry("1300x1000")
+
+    # Variables
+    points = []
+    rect_coords = []
+    used_fields = []
+
+    red_fields = []
+    purple_fields = []
+
+    second = 0 # For second step
+    color_flag = True
+
+    square_first_player = 0
+    square_second_player = 0
+
+    # Text and buttons
+    text = tk.Label(win, text="Random number", font=("Arial Bold", 18))
+    text.place(x = 1050, y = 100)
+
+    text = tk.Label(win, text="Your numbers are", font=("Arial Bold", 18))
+    text.place(x = 1050, y = 250)
+
+    num_find = tk.Button(win, text = "Number", command = rand_num, font=("Arial Bold", 18), background = "lightblue")
+    num_find.place(x = 1080, y = 400)
+
+    skip = tk.Button(win, text = "Skip turn", command = skip_turn, font=("Arial Bold", 18), background = "lightblue")
+    skip.place(x = 1080, y = 500)
+
+    clear_field = tk.Button(win, text = "Clear", command = clear_canvas, font=("Arial Bold", 18), background = "lightblue")
+    clear_field.place(x = 1080, y = 900)
 
 
+    # Canvas window
+    game = tk.Canvas(win, width = 1000, height = 1000, bg = "pink")
+    game.place(x = 0, y = 0)
 
+    draw_field() # draw! 
+    game.bind('<1>', click_point)
+
+    win.mainloop() #20x20
 
 
 
