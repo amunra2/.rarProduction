@@ -2,30 +2,50 @@ from random import randint
 import tkinter as tk
 from tkinter.messagebox import showinfo, showwarning
 
-steps = 50
-def check_win(used_fields, square_first_player, square_second_player):
-    global steps
+# Variables
+points = []
+rect_coords = []
+used_fields = []
 
-    if len(used_fields) == 400 or steps == 0:
+red_fields = []
+purple_fields = []
+
+second = 0 # For second step
+color_flag = True
+
+square_first_player = 0
+square_second_player = 0
+
+steps = 50
+
+size_a = 600
+size_b = 800
+win_fields = (size_a // 50) * (size_b // 50)
+
+
+def check_win(used_fields, square_first_player, square_second_player):
+    global steps, win_fields
+
+    if len(used_fields) == win_fields or steps == 0:
         winner(square_first_player, square_second_player)
     else:
         steps -= 1
         text = tk.Label(win, text = f"Steps left: {steps}", font=("Arial Bold", 18))
-        text.place(x = 1050, y = 700)
+        text.place(x = size_a + 50, y = 600)
 
 
 def rand_num():
-    global points
+    global points, size_a
 
     if len(points) >= 0 and len(points) < 2:
         num = randint(1, 3)
         points.append(num)
         res = tk.Label(win, text = f"{num}", font=("Arial Bold", 18))
-        res.place(x = 1130, y = 150)
+        res.place(x = size_a + 130, y = 150)
 
         if len(points) == 2:
             res = tk.Label(win, text = f"{points[0], points[1]}", font=("Arial Bold", 18))
-            res.place(x = 1110, y = 300)
+            res.place(x = size_a + 110, y = 300)
     else:
         showwarning("Stop", "Only 2 numbers")
 
@@ -43,24 +63,25 @@ def skip_turn():
 
 
 def draw_field():  # depends from size of the field
-
+    global size_a, size_b
+    
     test = 1000
     while test > 0:
-        game.create_line(test, 0, test, 1000, width = 2, fill = "blue")
-        game.create_line(0, test, 1000, test, width = 2, fill = "blue")
+        game.create_line(test, 0, test, size_b, width = 2, fill = "blue")
+        game.create_line(0, test, size_a, test, width = 2, fill = "blue")
         test -= 50
 
     game.create_line(50, 0, 50, 50, width = 5, fill = "red")
     game.create_line(0, 50, 50, 50, width = 5, fill = "red")
 
-    game.create_line(950, 50, 1000, 50, width = 5, fill = "red")
-    game.create_line(950, 50, 950, 0, width = 5, fill = "red")
+    game.create_line(size_a - 50, 50, size_a, 50, width = 5, fill = "red")
+    game.create_line(size_a - 50, 50, size_a - 50, 0, width = 5, fill = "red")
 
-    game.create_line(50, 950, 0, 950, width = 5, fill = "red")
-    game.create_line(50, 950, 50, 1000, width = 5, fill = "red")
+    game.create_line(50, size_b - 50, 0, size_b - 50, width = 5, fill = "red")
+    game.create_line(50, size_b - 50, 50, size_b, width = 5, fill = "red")
 
-    game.create_line(950, 950, 1000, 950, width = 5, fill = "red")
-    game.create_line(950, 950, 950, 1000, width = 5, fill = "red")
+    game.create_line(size_a - 50, size_b - 50, size_a, size_b - 50, width = 5, fill = "red")
+    game.create_line(size_a - 50, size_b - 50, size_a - 50, size_b, width = 5, fill = "red")
 
 
 def clear_canvas():
@@ -214,7 +235,7 @@ def build_rect(check_mis, rect_coords, points):
 
 
 def click_point(event):
-    global points
+    global points, win
 
     if len(points) == 2:
         x = int(event.x)
@@ -231,11 +252,8 @@ def click_point(event):
         showinfo("Error", "Not enough points")
 
 
-    #game.create_oval(x - R, y - R, x + R, y + R, width=1.5, fill = 'pink')
-
-
-def first_second_step(cur_fields, used_fields): #0 0     950 0      0 950    950 950
-    global second, color_flag
+def first_second_step(cur_fields, used_fields): 
+    global second, color_flag, size_a, size_b
 
     if len(used_fields) != 0 and second == 2:
         if connection_blocks(cur_fields, red_fields, purple_fields, color_flag):
@@ -244,9 +262,9 @@ def first_second_step(cur_fields, used_fields): #0 0     950 0      0 950    950
             return 0 # not 1st and not 2nd step
     else:
         left_up = [0, 0]
-        right_up = [950, 0]
-        left_down = [0, 950]
-        right_down = [950, 950]
+        right_up = [size_a - 50, 0]
+        left_down = [0, size_b - 50]
+        right_down = [size_a - 50, size_b - 50]
 
         if second == 0: # not 2nd step
             print(left_up not in cur_fields)
@@ -308,48 +326,39 @@ def winner(square_first_player, square_second_player):
     else:
         text = "Draw!"
 
+    print(square_first_player)
+    print(square_second_player)
+
+    text += f"\n First player: {square_first_player} \n Second player: {square_second_player}"
     showinfo("Congrats!", text)
     clear_canvas()
 
 
-if __name__ == "__main__":
+def game_window(resolution):
+    global game, size_a, size_b, win
+
     win = tk.Tk()
-    win.title("Game_NoName vers 0.6.1")
-    win.geometry("1300x1000")
-
-    # Variables
-    points = []
-    rect_coords = []
-    used_fields = []
-
-    red_fields = []
-    purple_fields = []
-
-    second = 0 # For second step
-    color_flag = True
-
-    square_first_player = 0
-    square_second_player = 0
+    win.title("Game_NoName vers 0.7.0")
+    win.geometry(resolution)
 
     # Text and buttons
     text = tk.Label(win, text="Random number", font=("Arial Bold", 18))
-    text.place(x = 1050, y = 100)
+    text.place(x = size_a + 50, y = 100)
 
     text = tk.Label(win, text="Your numbers are", font=("Arial Bold", 18))
-    text.place(x = 1050, y = 250)
+    text.place(x = size_a + 50, y = 250)
 
     num_find = tk.Button(win, text = "Number", command = rand_num, font=("Arial Bold", 18), background = "lightblue")
-    num_find.place(x = 1080, y = 400)
+    num_find.place(x = size_a + 80, y = 350)
 
     skip = tk.Button(win, text = "Skip turn", command = skip_turn, font=("Arial Bold", 18), background = "lightblue")
-    skip.place(x = 1080, y = 500)
+    skip.place(x = size_a + 80, y = 450)
 
     clear_field = tk.Button(win, text = "Clear", command = clear_canvas, font=("Arial Bold", 18), background = "lightblue")
-    clear_field.place(x = 1080, y = 900)
-
+    clear_field.place(x = size_a + 80, y = 550)
 
     # Canvas window
-    game = tk.Canvas(win, width = 1000, height = 1000, bg = "pink")
+    game = tk.Canvas(win, width = size_a, height = size_b, bg = "pink")
     game.place(x = 0, y = 0)
 
     draw_field() # draw! 
@@ -357,6 +366,55 @@ if __name__ == "__main__":
 
     win.mainloop() #20x20
 
+
+def accepted_size():
+    global size_a, size_b, win_fields
+    menu.destroy()
+    print(var.get())
+    resol = var.get()
+
+    next_number = False
+    f_digit = ""
+    s_digit = ""
+    
+    for digit in range(len(resol)):
+        if resol[digit] != 'x' and next_number == False:
+            f_digit += resol[digit]
+        elif resol[digit] != 'x' and next_number:
+            s_digit += resol[digit]
+        elif resol[digit] == 'x':
+            next_number = True
+    
+
+    size_a = int(f_digit) - 300
+    size_b = int(s_digit)
+    win_fields = (size_a // 50) * (size_b // 50)
+    game_window(resol)
+
+
+
+if __name__ == "__main__":
+    menu = tk.Tk()
+    menu.title("Menu - Game_NoName")
+    menu.geometry("400x300")
+
+    resolution = ["600x700", "700x700", "700x700", "900x800", "900x800", "1300x800", "900x900", "1000x900", "1000x1000"]
+
+    text = tk.Label(text="Select the window resolution:", font=("Arial Bold", 14))
+    text.place(x = 100, y = 50)
+
+    btn = tk.Button(text="Accept", font=("Arial Bold", 14), command=accepted_size)
+    btn.place(x = 170, y = 150)
+
+    var = tk.StringVar(menu)
+    var.set("1000x1000")
+
+    w = tk.OptionMenu(menu, var, *resolution)
+    w.config(font=("Arial Bold", 12))
+    w.place(x = 140, y = 100)
+
+
+    menu.mainloop()
 
 
 
